@@ -50,8 +50,24 @@ auth = GoogleProvider(
 )
 
 # --- Proxy the official stdio analytics-mcp over streamable HTTP ------------
+# NOTE: the stdio child gets a minimal environment by default, so credentials
+# must be passed explicitly — os.environ in this process is NOT inherited.
+child_env = {}
+if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+    child_env["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ[
+        "GOOGLE_APPLICATION_CREDENTIALS"
+    ]
+
 mcp = create_proxy(
-    {"mcpServers": {"ga4": {"command": "analytics-mcp", "args": []}}},
+    {
+        "mcpServers": {
+            "ga4": {
+                "command": "analytics-mcp",
+                "args": [],
+                "env": child_env,
+            }
+        }
+    },
     name="EngineRoom GA4 Analytics",
     auth=auth,
 )
