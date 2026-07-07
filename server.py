@@ -57,8 +57,14 @@ mcp = create_proxy(
 )
 
 if __name__ == "__main__":
+    public_host = BASE_URL.split("://", 1)[-1].rstrip("/")
     mcp.run(
         transport="http",
         host="0.0.0.0",
         port=int(os.environ.get("PORT", "8000")),
+        # FastMCP's DNS-rebinding guard only trusts localhost by default;
+        # allow the public hostname (and its origin) or every proxied
+        # request is rejected with 421 Misdirected Request.
+        allowed_hosts=[public_host],
+        allowed_origins=[BASE_URL.rstrip("/")],
     )
